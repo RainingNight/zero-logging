@@ -1,0 +1,13 @@
+﻿{
+  "Logging": {
+    "IncludeScopes": "true",
+    "LogLevel": {
+      "Default": "Debug",
+      "System": "Information",
+      "Microsoft": "Information"
+    },
+    "File": {
+      "Path": "Logs\\my-{Date}.log"
+    }
+  }
+}

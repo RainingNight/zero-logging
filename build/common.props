@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="dependencies.props" />
+  <Import Project="..\version.xml" />
+
+  <PropertyGroup>
+    <Product>Zero Logging</Product>
+    <RepositoryUrl>https://github.com/rainingnight/zero-logging</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>
