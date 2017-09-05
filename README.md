@@ -32,7 +32,6 @@ dotnet add package Zero.Logging.File --version 2.0.0-preview1
       "LogLevel": {
         "Default": "Information"
       },
-      // 日志文件保存路径
       "Path": "Logs\\my-{Date}.log"
     }
   }
