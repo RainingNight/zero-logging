@@ -42,10 +42,10 @@ namespace Zero.Logging.File.Internal
 
         private async Task ProcessLogQueue(object state)
         {
-            StringBuilder currentBatch = new StringBuilder();
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
                 var limit = _batchSize ?? int.MaxValue;
+                StringBuilder currentBatch = new StringBuilder();
                 while (limit > 0 && _messageQueue.TryTake(out var message))
                 {
                     currentBatch.Append(message);
