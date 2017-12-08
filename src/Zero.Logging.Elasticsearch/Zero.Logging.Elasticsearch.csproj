@@ -1,17 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <Description>Zero File logger provider implementation for Microsoft.Extensions.Logging.</Description>
+    <Description>Zero elasticsearch logger provider implementation for Microsoft.Extensions.Logging.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <PackageTags>zero;logging;logging file;</PackageTags>
+    <PackageTags>zero;logging;logging elasticsearch;</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Elasticsearch.Net" Version="6.0.0-alpha1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
 </Project>
