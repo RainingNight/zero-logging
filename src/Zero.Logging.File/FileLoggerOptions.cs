@@ -1,23 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
+using Microsoft.Extensions.Logging;
+using Zero.Logging.Commom;
 
 namespace Zero.Logging.File
 {
-    public class FileLoggerOptions
+    public class FileLoggerOptions : BatchingLoggerOptions
     {
-        private int? _batchSize = 32;
-        private int? _backgroundQueueSize;
-        private TimeSpan _flushPeriod = TimeSpan.FromSeconds(1);
-
-        private int? _fileSizeLimit = 10 * 1024 * 1024;
-        private int? _retainedFileCountLimit = 2;
-
-        /// <summary>
-        /// Gets or sets the log file path, with {Date} in the place of the file date. 
-        ///     E.g. "Logs\my-{Date}.log" will result in log files such as "Logs\my-2017-08-10.log" and so on.
-        /// </summary>
-        public string Path { get; set; }
-
+        private long? _fileSizeLimit = 1L * 1024 * 1024 * 1024;
+        private int? _retainedFileCountLimit = 31; // A long month of logs
+        private string _logDirectory = "logs";
+        private string _fileName = "log";
 
         /// <summary>
         /// Gets or sets value indicating if logger accepts and queues writes.
@@ -25,61 +17,43 @@ namespace Zero.Logging.File
         public bool IsEnabledBatching { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the period after which logs will be flushed to the store.
+        /// Gets or sets value indicating log write directory.
         /// </summary>
-        public TimeSpan FlushPeriod
+        public string LogDirectory
         {
-            get { return _flushPeriod; }
+            get { return _logDirectory; }
             set
             {
-                if (value <= TimeSpan.Zero)
+                if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(FlushPeriod)} must be positive.");
+                    throw new ArgumentException(nameof(value));
                 }
-                _flushPeriod = value;
+                _logDirectory = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets the maximum size of the background log message queue or null for no limit.
-        /// After maximum queue size is reached log event sink would start blocking.
-        /// Defaults to <c>null</c>.
+        /// Gets or sets value indicating log write file name.
         /// </summary>
-        public int? BackgroundQueueSize
+        public string FileName
         {
-            get { return _backgroundQueueSize; }
+            get { return _fileName; }
             set
             {
-                if (value < 0)
+                if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(BackgroundQueueSize)} must be non-negative.");
+                    throw new ArgumentException(nameof(value));
                 }
-                _backgroundQueueSize = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a maximum number of events to include in a single batch or null for no limit.
-        /// </summary>
-        public int? BatchSize
-        {
-            get { return _batchSize; }
-            set
-            {
-                if (value <= 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(BatchSize)} must be positive.");
-                }
-                _batchSize = value;
+                _fileName = value;
             }
         }
 
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum log size in bytes or null for no limit.
         /// Once the log is full, no more messages will be appended.
-        /// Defaults to <c>10MB</c>.
+        /// Defaults to <c>1GB</c>.
         /// </summary>
-        public int? FileSizeLimit
+        public long? FileSizeLimit
         {
             get { return _fileSizeLimit; }
             set
@@ -94,7 +68,7 @@ namespace Zero.Logging.File
 
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum retained file count or null for no limit.
-        /// Defaults to <c>2</c>.
+        /// Defaults to <c>31</c>.
         /// </summary>
         public int? RetainedFileCountLimit
         {
@@ -108,6 +82,11 @@ namespace Zero.Logging.File
                 _retainedFileCountLimit = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the frequency at which the log file should roll.
+        /// </summary>
+        public RollingIntervalEnum RollingInterval { get; set; }
 
         /// <summary>
         /// Gets or sets the log filter.

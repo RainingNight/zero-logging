@@ -31,7 +31,9 @@ namespace SampleApp
                         .AddFilter("Microsoft", LogLevel.Warning)
                         .AddFilter("System", LogLevel.Warning)
                         .AddFilter("SampleApp.Program", LogLevel.Debug)
-                        .AddFile(loggingConfiguration.GetSection("Logging").GetSection("File"));
+                        .AddConsole()
+                        .AddFile()
+                        .AddElasticsearch();
                 });
 
             // providers may be added to a LoggerFactory before any loggers are created

@@ -7,8 +7,11 @@
       "Microsoft": "Information"
     },
     "File": {
-      // 日志文件保存路径
-      "Path": "Logs\\my-{Date}.log"
+      // 按分钟滚动写入
+      "RollingInterval": "Minute"
+    },
+    "Elasticsearch": {
+      "AutoRegisterTemplate": true
     }
   }
 }

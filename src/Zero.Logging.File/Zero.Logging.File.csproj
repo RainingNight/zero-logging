@@ -7,11 +7,13 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>zero;logging;logging file;</PackageTags>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.0-preview2-prkrishn-test-16441" />
+  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
+    <ProjectReference Include="..\Zero.Logging.Commom\Zero.Logging.Commom.csproj" />
   </ItemGroup>
 
 </Project>

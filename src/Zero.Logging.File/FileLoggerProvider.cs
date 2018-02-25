@@ -1,55 +1,76 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using Zero.Logging.File.Internal;
+using Zero.Logging.Commom;
 
 namespace Zero.Logging.File
 {
     [ProviderAlias("File")]
-    public class FileLoggerProvider : ILoggerProvider
+    public class FileLoggerProvider : BatchingLoggerProvider
     {
-        private IMessageWriter _msgWriter;
-        private readonly IDisposable _optionsChangeToken;
-        private readonly Func<string, LogLevel, bool> _filter;
+        private readonly string _path;
+        private readonly string _fileName;
+        private readonly long? _maxFileSize;
+        private readonly int? _maxRetainedFiles;
+        private readonly RollingIntervalEnum _rollingInterval;
 
-        private static readonly Func<string, LogLevel, bool> trueFilter = (cat, level) => true;
-
-        public FileLoggerProvider(IOptionsMonitor<FileLoggerOptions> options)
+        public FileLoggerProvider(IOptionsMonitor<FileLoggerOptions> options) : base(options)
         {
-            _optionsChangeToken = options.OnChange(UpdateOptions);
-            UpdateOptions(options.CurrentValue);
+            var loggerOptions = options.CurrentValue;
+            _path = loggerOptions.LogDirectory;
+            _fileName = loggerOptions.FileName;
+            _maxFileSize = loggerOptions.FileSizeLimit;
+            _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
+            _rollingInterval = loggerOptions.RollingInterval;
         }
 
-        public FileLoggerProvider(FileLoggerOptions options)
+        protected override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
-            _filter = options.Filter ?? trueFilter;
-            UpdateOptions(options);
-        }
-
-        private void UpdateOptions(FileLoggerOptions options)
-        {
-            if (RollingFrequency.TryGetRollingFrequency(options.Path, out var r))
+            Directory.CreateDirectory(_path);
+            foreach (var group in messages.GroupBy(GetGrouping))
             {
-                _msgWriter = new RollingFileWriter(options.Path, options.FileSizeLimit, options.RetainedFileCountLimit);
+                var fullName = Path.Combine(_path, _fileName + "-" + group.Key + ".txt");
+                var fileInfo = new FileInfo(fullName);
+                if (_maxFileSize > 0 && fileInfo.Exists && fileInfo.Length > _maxFileSize)
+                {
+                    return;
+                }
+                using (var streamWriter = System.IO.File.AppendText(fullName))
+                {
+                    foreach (var item in group)
+                    {
+                        await streamWriter.WriteAsync(item.Message);
+                    }
+                    await streamWriter.FlushAsync();
+                }
             }
-            else
-            {
-                _msgWriter = new FileWriter(options.Path, options.FileSizeLimit);
-            }
-            if (options.IsEnabledBatching)
-            {
-                _msgWriter = new BatchingWriter(_msgWriter, options.FlushPeriod, options.BatchSize, options.BackgroundQueueSize);
-            }
+
+            RollFiles();
         }
 
-        public ILogger CreateLogger(string categoryName)
+        protected string GetGrouping(LogMessage message)
         {
-            return new FileLogger(_msgWriter, categoryName, _filter);
+            return message.Timestamp.ToString(_rollingInterval.GetFormat());
         }
 
-        public void Dispose()
+        protected void RollFiles()
         {
-            _optionsChangeToken?.Dispose();
+            if (_maxRetainedFiles > 0)
+            {
+                var files = new DirectoryInfo(_path)
+                    .GetFiles(_fileName + "*")
+                    .OrderByDescending(f => f.Name)
+                    .Skip(_maxRetainedFiles.Value);
+
+                foreach (var item in files)
+                {
+                    item.Delete();
+                }
+            }
         }
     }
 }
