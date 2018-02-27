@@ -7,7 +7,7 @@ Zero File logger provider for [Microsoft.Extensions.Logging](https://github.com/
 **First**, install the _Zero.Logging.File_ [NuGet package](https://www.nuget.org/packages/Zero.Logging.File) into your app:
 
 ```powershell
-dotnet add package Zero.Logging.File --version 2.0.0-preview1
+dotnet add package Zero.Logging.File --version 1.0.0-alpha3-20180227
 ```
 
 ### Configure
@@ -18,21 +18,17 @@ dotnet add package Zero.Logging.File --version 2.0.0-preview1
 {
   "Logging": {
     "IncludeScopes": false,
-    "Debug": {
-      "LogLevel": {
-        "Default": "Warning"
-      }
-    },
     "Console": {
       "LogLevel": {
         "Default": "Warning"
       }
     },
-    "File":{
+    "File": {
       "LogLevel": {
-        "Default": "Information"
+        "Default": "Error"
       },
-      "Path": "Logs\\my-{Date}.log"
+      // 按分钟滚动写入
+      "RollingInterval": "Minute"
     }
   }
 }
@@ -45,7 +41,7 @@ public static IWebHost BuildWebHost(string[] args) =>
     WebHost.CreateDefaultBuilder(args)
         .ConfigureLogging((hostingContext, logging) =>
         {
-            logging.AddFile(hostingContext.Configuration.GetSection("Logging:File"));
+            logging.AddFile();
         })
         .UseStartup<Startup>()
         .Build();
@@ -53,18 +49,48 @@ public static IWebHost BuildWebHost(string[] args) =>
 
 ### Demonstrate
 
+Call logging methods on that logger object:
+
+```csharp
+public class ValuesController : Controller
+{
+    private readonly ILogger _logger;
+
+    public ValuesController(ILogger<ValuesController> logger)
+    {
+        _logger = logger;
+    }
+
+    [HttpGet]
+    public void Get()
+    {
+        _logger.LogInformation("Log Information.");
+        _logger.LogTrace("Log Trace.");
+        _logger.LogDebug("Log Debug.");
+        try
+        {
+            throw new Exception("Boom");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(1, ex, "Unexpected critical error starting application");
+            _logger.LogError(1, ex, "Unexpected error");
+            _logger.LogWarning(1, ex, "Unexpected warning");
+        }
+    }
+}
+```
+
 That's it! With the level bumped up a little you will see log output like:
 
-```
-2017-09-05 16:30:11.244 +08:00 [info] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[0]: User profile is available. Using 'C:\Users\xxx\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
-2017-09-05 16:30:11.955 +08:00 [info] Microsoft.AspNetCore.Hosting.Internal.WebHost[1]: Request starting HTTP/1.1 GET http://localhost:5000/  
-2017-09-05 16:30:12.045 +08:00 [info] Microsoft.AspNetCore.Hosting.Internal.WebHost[2]: Request finished in 89.4786ms 404 
-2017-09-05 16:30:12.119 +08:00 [info] Microsoft.AspNetCore.Hosting.Internal.WebHost[1]: Request starting HTTP/1.1 GET http://localhost:5000/favicon.ico  
-2017-09-05 16:30:12.119 +08:00 [info] Microsoft.AspNetCore.Hosting.Internal.WebHost[2]: Request finished in 0.4669ms 404 
-2017-09-05 16:30:17.055 +08:00 [info] Microsoft.AspNetCore.Hosting.Internal.WebHost[1]: Request starting HTTP/1.1 GET http://localhost:5000/api/values  
-2017-09-05 16:30:17.088 +08:00 [info] Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker[1]: Executing action method WebAPI.Controllers.ValuesController.Get (WebAPI) with arguments ((null)) - ModelState is Valid
-2017-09-05 16:30:17.095 +08:00 [info] Microsoft.AspNetCore.Mvc.Internal.ObjectResultExecutor[1]: Executing ObjectResult, writing value Microsoft.AspNetCore.Mvc.ControllerContext.
-2017-09-05 16:30:17.153 +08:00 [info] Microsoft.AspNetCore.Mvc.Internal.ControllerActionInvoker[2]: Executed action WebAPI.Controllers.ValuesController.Get (WebAPI) in 69.5004ms
-2017-09-05 16:30:17.154 +08:00 [info] Microsoft.AspNetCore.Hosting.Internal.WebHost[2]: Request finished in 98.9511ms 200 application/json; charset=utf-8
+```text
+# logs/log-201802271502.txt
+
+2018-02-27 15:02:40.608 +08:00 [Critical] WebApplication1.Controllers.ValuesController: Unexpected critical error starting application
+System.Exception: Boom
+   at WebApplication1.Controllers.ValuesController.Get() in C:\Users\rainging\source\repos\WebApplication1\WebApplication1\Controllers\ValuesController.cs:line 28
+2018-02-27 15:02:40.631 +08:00 [Error] WebApplication1.Controllers.ValuesController: Unexpected error
+System.Exception: Boom
+   at WebApplication1.Controllers.ValuesController.Get() in C:\Users\rainging\source\repos\WebApplication1\WebApplication1\Controllers\ValuesController.cs:line 28
 ```
 
