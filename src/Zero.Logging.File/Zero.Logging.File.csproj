@@ -5,11 +5,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <PackageTags>zero;logging;logging file;</PackageTags>
+    <PackageTags>zero;logging;logging-file;</PackageTags>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.0-preview2-prkrishn-test-16441" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.0-preview1-final" />
   </ItemGroup>
 
   <ItemGroup>

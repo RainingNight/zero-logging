@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Zero file logger common lib.</Description>
   </PropertyGroup>
 
   <ItemGroup>

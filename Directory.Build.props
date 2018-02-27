@@ -7,9 +7,13 @@
 
   <PropertyGroup>
     <Product>Zero Logging</Product>
+    <Company>RainingNight</Company>
+    <Authors>RainingNight</Authors>
+    <Copyright>Copyright © RainingNight</Copyright>
+    <PackageProjectUrl>https://github.com/rainingnight/zero-logging</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/RainingNight/zero-logging/dev/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/rainingnight/zero-logging</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
