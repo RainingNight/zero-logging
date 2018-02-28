@@ -1,6 +1,12 @@
 # zero-logging
 
-Zero File logger provider for [Microsoft.Extensions.Logging](https://github.com/aspnet/Logging), the logging subsystem used by ASP.NET Core.
+Zero logger provider for [Microsoft.Extensions.Logging](https://github.com/aspnet/Logging), the logging subsystem used by ASP.NET Core.
+
+## Logging in Elasticsearch
+
+PLEASE Read [Zero.Logging.Elasticsearch](https://github.com/RainingNight/zero-logging/blob/dev/src/Zero.Logging.Elasticsearch/readme.md).
+
+## Logging in File
 
 ### Install
 
@@ -27,7 +33,6 @@ dotnet add package Zero.Logging.File --version 1.0.0-alpha3-20180228
       "LogLevel": {
         "Default": "Error"
       },
-      // 按分钟滚动写入
       "RollingInterval": "Minute"
     }
   }
