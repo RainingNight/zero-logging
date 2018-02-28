@@ -4,7 +4,7 @@
     <VersionSuffix>alpha3</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
-    <BuildNumber Condition="'$(BuildNumber)' == ''">20180227</BuildNumber>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">20180228</BuildNumber>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
   </PropertyGroup>
 </Project>

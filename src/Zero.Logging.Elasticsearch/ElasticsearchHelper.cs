@@ -35,6 +35,11 @@ namespace Zero.Logging.Elasticsearch
             _templateMatchString = _indexFormatRegex.Replace(options.IndexFormat, @"$1*$2");
             _indexDecider = options.IndexDecider ?? (logMsg => string.Format(options.IndexFormat, logMsg.Timestamp));
 
+            if (!string.IsNullOrEmpty(options.ElasticsearchUrl))
+            {
+                options.ConnectionPool = new SingleNodeConnectionPool(new Uri(options.ElasticsearchUrl));
+            }
+
             var configuration = new ConnectionConfiguration(options.ConnectionPool, options.Connection, options.Serializer)
                 .RequestTimeout(options.ConnectionTimeout);
             if (options.ModifyConnectionSettings != null)

@@ -1,0 +1,30 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${TAG}
+    container_name: elasticsearch
+    environment:
+      - http.host=0.0.0.0
+      - transport.host=127.0.0.1
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+    ports:
+      - 9200:9200
+    networks: 
+      - stack
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${TAG}
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_USERNAME=kibana
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+    ports: 
+      - 5601:5601
+    networks: 
+      - stack
+    depends_on: 
+      - elasticsearch
+
+networks:
+  stack:
+    driver: bridge

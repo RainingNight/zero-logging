@@ -134,6 +134,11 @@ namespace Zero.Logging.Elasticsearch
         public Func<ConnectionConfiguration, ConnectionConfiguration> ModifyConnectionSettings { get; set; }
 
         ///<summary>
+        /// Allows you to override the elasticsearch url used to communicate with elasticsearch.
+        /// </summary>
+        public string ElasticsearchUrl { get; set; }
+
+        ///<summary>
         /// Allows you to override the connection used to communicate with elasticsearch.
         /// </summary>
         public IConnection Connection { get; set; }
@@ -141,7 +146,7 @@ namespace Zero.Logging.Elasticsearch
         /// <summary>
         /// The connectionpool describing the cluster to write event to
         /// </summary>
-        public IConnectionPool ConnectionPool { get; }
+        public IConnectionPool ConnectionPool { get; internal set; }
 
         /// <summary>
         /// The connection timeout (in milliseconds) when sending bulk operations to elasticsearch (defaults to 5000).

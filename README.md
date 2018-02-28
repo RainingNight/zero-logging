@@ -7,7 +7,7 @@ Zero File logger provider for [Microsoft.Extensions.Logging](https://github.com/
 **First**, install the _Zero.Logging.File_ [NuGet package](https://www.nuget.org/packages/Zero.Logging.File) into your app:
 
 ```powershell
-dotnet add package Zero.Logging.File --version 1.0.0-alpha3-20180227
+dotnet add package Zero.Logging.File --version 1.0.0-alpha3-20180228
 ```
 
 ### Configure
@@ -64,8 +64,8 @@ public class ValuesController : Controller
     [HttpGet]
     public void Get()
     {
-        _logger.LogInformation("Log Information.");
         _logger.LogTrace("Log Trace.");
+        _logger.LogInformation("Log Information.");
         _logger.LogDebug("Log Debug.");
         try
         {
