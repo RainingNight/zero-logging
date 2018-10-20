@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Elasticsearch.Net;
-using Zero.Logging.Commom;
+using Zero.Logging.Batching;
 
 namespace Zero.Logging.Elasticsearch
 {

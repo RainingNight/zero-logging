@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
-using Zero.Logging.Commom;
+using Zero.Logging.Batching;
 
 namespace Zero.Logging.File
 {

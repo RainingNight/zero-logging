@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Zero.Logging.Commom
+namespace Zero.Logging.Batching
 {
     public struct LogMessage
     {

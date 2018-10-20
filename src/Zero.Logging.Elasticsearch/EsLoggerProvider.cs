@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Zero.Logging.Commom;
+using Zero.Logging.Batching;
 
 namespace Zero.Logging.Elasticsearch
 {

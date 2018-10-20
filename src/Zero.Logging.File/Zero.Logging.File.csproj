@@ -11,9 +11,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.1" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <ProjectReference Include="..\Zero.Logging.Commom\Zero.Logging.Commom.csproj" />
+    <ProjectReference Include="..\Zero.Logging.Batching\Zero.Logging.Batching.csproj" />
   </ItemGroup>
 
 </Project>

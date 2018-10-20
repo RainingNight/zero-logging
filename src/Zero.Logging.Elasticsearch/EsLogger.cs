@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Zero.Logging.Commom;
+using Zero.Logging.Batching;
 
 namespace Zero.Logging.Elasticsearch
 {

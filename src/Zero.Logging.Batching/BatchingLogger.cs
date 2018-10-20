@@ -2,7 +2,7 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace Zero.Logging.Commom
+namespace Zero.Logging.Batching
 {
     public class BatchingLogger : ILogger
     {
