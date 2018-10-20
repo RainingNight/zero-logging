@@ -6,13 +6,10 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>zero;logging;logging-file;</PackageTags>
-  </PropertyGroup>
+  </PropertyGroup> 
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.1" />
-  </ItemGroup>
-  
-  <ItemGroup>
+    <ProjectReference Include="..\..\Source\Microsoft.Extensions.Logging.Configuration\Microsoft.Extensions.Logging.Configuration.csproj" />
     <ProjectReference Include="..\Zero.Logging.Batching\Zero.Logging.Batching.csproj" />
   </ItemGroup>
 
