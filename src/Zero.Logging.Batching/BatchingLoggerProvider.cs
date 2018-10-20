@@ -101,23 +101,16 @@ namespace Zero.Logging.Batching
 
         public void AddMessage(DateTimeOffset timestamp, string message)
         {
-            if (IsEnabled)
+            if (!_messageQueue.IsAddingCompleted)
             {
-                if (!_messageQueue.IsAddingCompleted)
+                try
                 {
-                    try
-                    {
-                        _messageQueue.Add(new LogMessage { Message = message, Timestamp = timestamp }, _cancellationTokenSource.Token);
-                    }
-                    catch
-                    {
-                        //cancellation token canceled or CompleteAdding called
-                    }
+                    _messageQueue.Add(new LogMessage { Message = message, Timestamp = timestamp }, _cancellationTokenSource.Token);
                 }
-            }
-            else
-            {
-                WriteMessagesAsync(new List<LogMessage> { new LogMessage { Message = message, Timestamp = timestamp } }, CancellationToken.None).Wait();
+                catch
+                {
+                    //cancellation token canceled or CompleteAdding called
+                }
             }
         }
 

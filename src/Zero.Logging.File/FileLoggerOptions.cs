@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Extensions.Logging;
 using Zero.Logging.Batching;
 
 namespace Zero.Logging.File
@@ -10,11 +9,6 @@ namespace Zero.Logging.File
         private int? _retainedFileCountLimit = 31; // A long month of logs
         private string _logDirectory = "logs";
         private string _fileName = "log";
-
-        /// <summary>
-        /// Gets or sets value indicating if logger accepts and queues writes.
-        /// </summary>
-        public bool IsEnabledBatching { get; set; } = true;
 
         /// <summary>
         /// Gets or sets value indicating log write directory.
@@ -33,7 +27,9 @@ namespace Zero.Logging.File
         }
 
         /// <summary>
-        /// Gets or sets value indicating log write file name.
+        /// Gets or sets a string representing the prefix of the file name used to store the logging information.
+        /// The current date, in the format YYYYMMDD will be added after the given value.
+        /// Defaults to <c>log</c>.
         /// </summary>
         public string FileName
         {
@@ -88,9 +84,14 @@ namespace Zero.Logging.File
         /// </summary>
         public RollingIntervalEnum RollingInterval { get; set; }
 
-        /// <summary>
-        /// Gets or sets the log filter.
-        /// </summary>
-        public Func<string, LogLevel, bool> Filter { get; set; }
+        ///// <summary>
+        ///// Gets or sets value indicating if logger accepts and queues writes.
+        ///// </summary>
+        //public bool IsEnabledBatching { get; set; } = true;
+
+        ///// <summary>
+        ///// Gets or sets the log filter.
+        ///// </summary>
+        //public Func<string, LogLevel, bool> Filter { get; set; }
     }
 }

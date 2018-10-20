@@ -6,7 +6,7 @@ namespace Zero.Logging.Batching
     {
         private int? _batchSize = 32;
         private int? _backgroundQueueSize;
-        private TimeSpan _flushPeriod = TimeSpan.FromSeconds(2);
+        private TimeSpan _flushPeriod = TimeSpan.FromSeconds(1);
 
         /// <summary>
         /// Gets or sets the period after which logs will be flushed to the store.

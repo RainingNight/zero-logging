@@ -31,6 +31,7 @@ namespace Zero.Logging.File
         protected override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
             Directory.CreateDirectory(_path);
+
             foreach (var group in messages.GroupBy(GetGrouping))
             {
                 var fullName = Path.Combine(_path, _fileName + "-" + group.Key + ".txt");
@@ -45,7 +46,7 @@ namespace Zero.Logging.File
                     {
                         await streamWriter.WriteAsync(item.Message);
                     }
-                    await streamWriter.FlushAsync();
+                    //await streamWriter.FlushAsync();
                 }
             }
 
