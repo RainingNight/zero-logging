@@ -10,10 +10,13 @@
     },
     "File": {
       // 按分钟滚动写入
-      "RollingInterval": "Minute"
+      "RollingInterval": "Minute",
+      "LogLevel": {
+        "Default": "Information"
+      }
     },
     "Elasticsearch": {
-      "AutoRegisterTemplate": true
+      "ElasticsearchUrl": "http://140.143.234.19:9200"
     }
   }
 }

@@ -54,8 +54,13 @@ namespace Zero.Logging.Elasticsearch
                     if (item.index != null && item.index.error != null)
                     {
                         var e = messages.ElementAt(indexer);
+                        if (_esHelper.Options.EmitEventFailure.HasFlag(EmitEventFailureHandling.WriteToConsole))
+                        {
+                            // ES reports an error, output the error to the console.
+                            Console.WriteLine("Failed to store into Elasticsearch. Elasticsearch reports for index {0} the following: {1}", item.index._index, item.index.error);
+                        }
 
-                        if (_esHelper.Options.FailureCallback != null)
+                        if (_esHelper.Options.EmitEventFailure.HasFlag(EmitEventFailureHandling.RaiseCallback) && _esHelper.Options.FailureCallback != null)
                         {
                             // Send to a failure callback
                             try
@@ -68,7 +73,6 @@ namespace Zero.Logging.Elasticsearch
                                 Console.WriteLine("Caught exception while emitting to callback {1}: {0}", ex, _esHelper.Options.FailureCallback);
                             }
                         }
-
                     }
                     indexer++;
                 }
@@ -83,6 +87,11 @@ namespace Zero.Logging.Elasticsearch
         {
             if (messages == null || !messages.Any())
                 return null;
+
+            if (!_esHelper.TemplateRegistrationSuccess && _esHelper.Options.RegisterTemplateFailure == RegisterTemplateRecovery.Throw)
+            {
+                return null;
+            }
 
             var payload = new List<string>();
             foreach (var e in messages)
@@ -108,8 +117,12 @@ namespace Zero.Logging.Elasticsearch
 
         protected virtual void HandleException(Exception ex, IEnumerable<LogMessage> messages)
         {
-            Console.WriteLine("Caught exception while preforming bulk operation to Elasticsearch: {0}", ex);
-            if (_esHelper.Options.FailureCallback != null)
+            if (_esHelper.Options.EmitEventFailure.HasFlag(EmitEventFailureHandling.WriteToConsole))
+            {
+                // ES reports an error, output the error to the selflog
+                Console.WriteLine("Caught exception while preforming bulk operation to Elasticsearch: {0}", ex);
+            }
+            if (_esHelper.Options.EmitEventFailure.HasFlag(EmitEventFailureHandling.RaiseCallback) && _esHelper.Options.FailureCallback != null)
             {
                 // Send to a failure callback
                 try
@@ -124,6 +137,10 @@ namespace Zero.Logging.Elasticsearch
                     // We do not let this fail too
                     Console.WriteLine("Caught exception while emitting to callback {1}: {0}", exCallback, _esHelper.Options.FailureCallback);
                 }
+            }
+            if (_esHelper.Options.EmitEventFailure.HasFlag(EmitEventFailureHandling.ThrowException))
+            {
+                throw ex;
             }
         }
     }

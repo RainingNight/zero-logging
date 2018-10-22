@@ -19,8 +19,11 @@ namespace Microsoft.Extensions.Logging
             builder.AddConfiguration();
 
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, EsLoggerProvider>());
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<EsLoggerOptions>, EsLoggerOptionsSetup>());
-            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptionsChangeTokenSource<EsLoggerOptions>, LoggerProviderOptionsChangeTokenSource<EsLoggerOptions, EsLoggerProvider>>());
+            builder.Services.AddSingleton<IConfigureOptions<EsLoggerOptions>, EsLoggerOptionsSetup>();
+            builder.Services.AddSingleton<IOptionsChangeTokenSource<EsLoggerOptions>, LoggerProviderOptionsChangeTokenSource<EsLoggerOptions, EsLoggerProvider>>();
+
+            //builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<EsLoggerOptions>, EsLoggerOptionsSetup>());
+            //builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptionsChangeTokenSource<EsLoggerOptions>, LoggerProviderOptionsChangeTokenSource<EsLoggerOptions, EsLoggerProvider>>());
             return builder;
         }
 

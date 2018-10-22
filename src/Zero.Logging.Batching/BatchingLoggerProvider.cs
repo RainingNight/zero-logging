@@ -121,10 +121,7 @@ namespace Zero.Logging.Batching
                 new BlockingCollection<LogMessage>(new ConcurrentQueue<LogMessage>(), _queueSize.Value);
 
             _cancellationTokenSource = new CancellationTokenSource();
-            _outputTask = Task.Factory.StartNew<Task>(
-                ProcessLogQueue,
-                null,
-                TaskCreationOptions.LongRunning);
+            _outputTask = Task.Factory.StartNew(ProcessLogQueue, null, TaskCreationOptions.LongRunning);
         }
 
         private void Stop()

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Elasticsearch.Net;
 using Zero.Logging.Batching;
 
@@ -24,40 +22,11 @@ namespace Zero.Logging.Elasticsearch
             DeadLetterIndexName = DefaultDeadLetterIndexName;
             TypeName = DefaultTypeName;
             TemplateName = DefaultTemplateName;
+            EmitEventFailure = EmitEventFailureHandling.WriteToConsole;
+            RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway;
+
+            ElasticsearchUrl = "http://localhost:9200";
             ConnectionTimeout = DefaultConnectionTimeout;
-            ConnectionPool = new SingleNodeConnectionPool(new Uri(DefaultNode));
-        }
-
-        /// <summary>
-        /// Configures the elasticsearch log.
-        /// </summary>
-        /// <param name="connectionPool">The connectionpool to use to write events to.</param>
-        public EsLoggerOptions(IConnectionPool connectionPool) : this()
-        {
-            ConnectionPool = connectionPool;
-        }
-
-        /// <summary>
-        /// Configures the elasticsearch log.
-        /// </summary>
-        /// <param name="nodes">The nodes to write to.</param>
-        public EsLoggerOptions(IEnumerable<Uri> nodes) : this()
-        {
-            nodes = nodes != null && nodes.Any(n => n != null)
-                ? nodes.Where(n => n != null)
-                : new[] { new Uri("http://localhost:9200") };
-            if (nodes.Count() == 1)
-                ConnectionPool = new SingleNodeConnectionPool(nodes.First());
-            else
-                ConnectionPool = new StaticConnectionPool(nodes);
-        }
-
-        /// <summary>
-        /// Configures the elasticsearch log
-        /// </summary>
-        /// <param name="node">The node to write to</param>
-        public EsLoggerOptions(Uri node) : this(new[] { node })
-        {
         }
 
         #region Template
@@ -65,6 +34,11 @@ namespace Zero.Logging.Elasticsearch
         /// Auto register an index template for the logs in elasticsearch.
         /// </summary>
         public bool AutoRegisterTemplate { get; set; }
+
+        /// <summary>
+        /// Specifies the option on how to handle failures when writing the template to Elasticsearch. This is only applicable when using the AutoRegisterTemplate option.
+        /// </summary>
+        public RegisterTemplateRecovery RegisterTemplateFailure { get; set; }
 
         ///<summary>
         /// When using the <see cref="AutoRegisterTemplate"/> feature this allows you to override the default template name.
@@ -144,11 +118,6 @@ namespace Zero.Logging.Elasticsearch
         public IConnection Connection { get; set; }
 
         /// <summary>
-        /// The connectionpool describing the cluster to write event to
-        /// </summary>
-        public IConnectionPool ConnectionPool { get; internal set; }
-
-        /// <summary>
         /// The connection timeout (in milliseconds) when sending bulk operations to elasticsearch (defaults to 5000).
         /// </summary>
         public TimeSpan ConnectionTimeout { get; set; }
@@ -159,8 +128,61 @@ namespace Zero.Logging.Elasticsearch
         public IElasticsearchSerializer Serializer { get; set; }
 
         /// <summary>
+        /// Specifies how failing emits should be handled.
+        /// </summary>
+        public EmitEventFailureHandling EmitEventFailure { get; set; }
+
+        /// <summary>
         /// A callback which can be used to handle logmessage which are not submitted to Elasticsearch like when it is unable to accept the events. 
         /// </summary>
         public Action<LogMessage> FailureCallback { get; set; }
+    }
+
+    /// <summary>
+    /// Specifies what to do when the template could not be created. This can mean that your data is not correctly indexed, so you might want to handle this failure.
+    /// </summary>
+    public enum RegisterTemplateRecovery
+    {
+        /// <summary>
+        /// Ignore the issue and keep indexing. This is the default option.
+        /// </summary>
+        IndexAnyway = 1,
+
+        ///// <summary>
+        ///// Keep buffering the data until it is written. be aware you might hit a limit here.
+        ///// </summary>
+        //BufferUntilSuccess = 2,
+
+        /// <summary>
+        /// When the template cannot be registered, move the events to the deadletter index instead.
+        /// </summary>
+        IndexToDeadletterIndex = 4,
+
+        /// <summary>
+        /// When the template cannot be registered, throw an exception.
+        /// </summary>
+        Throw = 8
+    }
+
+    /// <summary>
+    /// Sepecifies options for handling failures when emitting the events to Elasticsearch. Can be a combination of options.
+    /// </summary>
+    [Flags]
+    public enum EmitEventFailureHandling
+    {
+        /// <summary>
+        /// Send the error to the Console.
+        /// </summary>
+        WriteToConsole = 1,
+
+        /// <summary>
+        /// Throw the exception to the caller.
+        /// </summary>
+        ThrowException = 2,
+
+        /// <summary>
+        /// The failure callback function will be called when the event cannot be submitted to Elasticsearch.
+        /// </summary>
+        RaiseCallback = 4
     }
 }

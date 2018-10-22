@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Elasticsearch.Net;
 using Zero.Logging.Batching;
@@ -8,14 +9,14 @@ namespace Zero.Logging.Elasticsearch
 {
     internal class ElasticsearchHelper
     {
-        private static readonly Regex _indexFormatRegex = new Regex(@"^(.*)(?:\{0\:.+\})(.*)$");
-        private readonly EsLoggerOptions _options;
+        private readonly ElasticLowLevelClient _client;
+
         private readonly Func<LogMessage, string> _indexDecider;
         private readonly bool _registerTemplateOnStartup;
         private readonly string _templateName;
         private readonly string _templateMatchString;
 
-        private readonly ElasticLowLevelClient _client;
+        private static readonly Regex _indexFormatRegex = new Regex(@"^(.*)(?:\{0\:.+\})(.*)$");
 
         public static ElasticsearchHelper Create(EsLoggerOptions options)
         {
@@ -26,36 +27,46 @@ namespace Zero.Logging.Elasticsearch
 
         private ElasticsearchHelper(EsLoggerOptions options)
         {
+            if (string.IsNullOrWhiteSpace(options.ElasticsearchUrl)) throw new ArgumentException("options.ElasticsearchUrl");
             if (string.IsNullOrWhiteSpace(options.IndexFormat)) throw new ArgumentException("options.IndexFormat");
             if (string.IsNullOrWhiteSpace(options.TypeName)) throw new ArgumentException("options.TypeName");
             if (string.IsNullOrWhiteSpace(options.TemplateName)) throw new ArgumentException("options.TemplateName");
 
-            _options = options;
             _templateName = options.TemplateName;
             _templateMatchString = _indexFormatRegex.Replace(options.IndexFormat, @"$1*$2");
             _indexDecider = options.IndexDecider ?? (logMsg => string.Format(options.IndexFormat, logMsg.Timestamp));
 
-            if (!string.IsNullOrEmpty(options.ElasticsearchUrl))
+            Options = options;
+
+            IConnectionPool pool;
+            if (options.ElasticsearchUrl.Contains(";"))
             {
-                options.ConnectionPool = new SingleNodeConnectionPool(new Uri(options.ElasticsearchUrl));
+                var urls = options.ElasticsearchUrl.Split(';').ToList();
+                pool = new StaticConnectionPool(urls.Select(_ => new Uri(_)));
+            }
+            else
+            {
+                pool = new SingleNodeConnectionPool(new Uri(options.ElasticsearchUrl));
             }
 
-            var configuration = new ConnectionConfiguration(options.ConnectionPool, options.Connection, options.Serializer)
-                .RequestTimeout(options.ConnectionTimeout);
-            if (options.ModifyConnectionSettings != null)
-                configuration = options.ModifyConnectionSettings(configuration);
+            var configuration = new ConnectionConfiguration(pool, options.Connection, options.Serializer).RequestTimeout(options.ConnectionTimeout);
+
+            if (options.ModifyConnectionSettings != null) configuration = options.ModifyConnectionSettings(configuration);
 
             configuration.ThrowExceptions();
 
             _client = new ElasticLowLevelClient(configuration);
+
             _registerTemplateOnStartup = options.AutoRegisterTemplate;
             TemplateRegistrationSuccess = !_registerTemplateOnStartup;
         }
 
-        public EsLoggerOptions Options => _options;
+        public EsLoggerOptions Options { get; }
+
         public IElasticLowLevelClient Client => _client;
 
         public bool TemplateRegistrationSuccess { get; private set; }
+
 
         public string Serialize(object o)
         {
@@ -64,7 +75,10 @@ namespace Zero.Logging.Elasticsearch
 
         public string GetIndexForEvent(LogMessage e, DateTimeOffset offset)
         {
-            if (!TemplateRegistrationSuccess) return string.Format(_options.DeadLetterIndexName, offset);
+            if (!TemplateRegistrationSuccess && Options.RegisterTemplateFailure == RegisterTemplateRecovery.IndexToDeadletterIndex)
+            {
+                return string.Format(Options.DeadLetterIndexName, offset);
+            }
             return _indexDecider(e);
         }
 
@@ -74,7 +88,7 @@ namespace Zero.Logging.Elasticsearch
 
             try
             {
-                if (!_options.OverwriteTemplate)
+                if (!Options.OverwriteTemplate)
                 {
                     var templateExistsResponse = _client.IndicesExistsTemplateForAll<DynamicResponse>(_templateName);
                     if (templateExistsResponse.HttpStatusCode == 200)
@@ -101,6 +115,9 @@ namespace Zero.Logging.Elasticsearch
             {
                 TemplateRegistrationSuccess = false;
                 Console.WriteLine("Failed to create the template. {0}", ex);
+
+                if (Options.RegisterTemplateFailure == RegisterTemplateRecovery.Throw)
+                    throw;
             }
         }
 
@@ -122,22 +139,114 @@ namespace Zero.Logging.Elasticsearch
 
         private object GetTemplateData()
         {
-            if (_options.GetTemplateContent != null)
-                return _options.GetTemplateContent();
+            if (Options.GetTemplateContent != null)
+                return Options.GetTemplateContent();
 
             var settings = new Dictionary<string, string>
             {
                 {"index.refresh_interval", "5s"}
             };
 
-            if (_options.NumberOfShards.HasValue)
-                settings.Add("number_of_shards", _options.NumberOfShards.Value.ToString());
+            if (Options.NumberOfShards.HasValue)
+                settings.Add("number_of_shards", Options.NumberOfShards.Value.ToString());
 
-            if (_options.NumberOfReplicas.HasValue)
-                settings.Add("number_of_replicas", _options.NumberOfReplicas.Value.ToString());
+            if (Options.NumberOfReplicas.HasValue)
+                settings.Add("number_of_replicas", Options.NumberOfReplicas.Value.ToString());
 
-            return ElasticsearchTemplateProvider.GetTemplate(settings, _templateMatchString);
+            return GetTemplateESv6(settings, _templateMatchString);
 
         }
+
+        private static object GetTemplateESv6(Dictionary<string, string> settings, string templateMatchString)
+        {
+            return new
+            {
+                template = templateMatchString,
+                settings,
+                mappings = new
+                {
+                    _default_ = new
+                    {
+                        dynamic_templates = new List<object>
+                        {
+                            //when you use serilog as an adaptor for third party frameworks
+                            //where you have no control over the log message they typically
+                            //contain {0} ad infinitum, we force numeric property names to
+                            //contain strings by default.
+                            {
+                                new
+                                {
+                                    numerics_in_fields = new
+                                    {
+                                        path_match = @"fields\.[\d+]$",
+                                        match_pattern = "regex",
+                                        mapping = new
+                                        {
+                                            type = "text",
+                                            index = true,
+                                            norms = false
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                new
+                                {
+                                    string_fields = new
+                                    {
+                                        match = "*",
+                                        match_mapping_type = "string",
+                                        mapping = new
+                                        {
+                                            type = "text",
+                                            index = true,
+                                            norms = false,
+                                            fields = new
+                                            {
+                                                raw = new
+                                                {
+                                                    type = "keyword",
+                                                    index = true,
+                                                    ignore_above = 256
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        properties = new Dictionary<string, object>
+                        {
+                            {"message", new {type = "text", index = "true"}},
+                            {
+                                "exceptions", new
+                                {
+                                    type = "nested",
+                                    properties = new Dictionary<string, object>
+                                    {
+                                        {"Depth", new {type = "integer"}},
+                                        {"RemoteStackIndex", new {type = "integer"}},
+                                        {"HResult", new {type = "integer"}},
+                                        {"StackTraceString", new {type = "text", index = "true"}},
+                                        {"RemoteStackTraceString", new {type = "text", index = "true"}},
+                                        {
+                                            "ExceptionMessage", new
+                                            {
+                                                type = "object",
+                                                properties = new Dictionary<string, object>
+                                                {
+                                                    {"MemberType", new {type = "integer"}},
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
     }
 }

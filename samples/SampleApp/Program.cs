@@ -31,9 +31,9 @@ namespace SampleApp
                         .AddFilter("Microsoft", LogLevel.Warning)
                         .AddFilter("System", LogLevel.Warning)
                         .AddFilter("SampleApp.Program", LogLevel.Debug)
-                        .AddConsole()
-                        .AddFile();
-                    //.AddElasticsearch();
+                        //.AddConsole()
+                        .AddFile()
+                        .AddElasticsearch();
                 });
 
             // providers may be added to a LoggerFactory before any loggers are created
@@ -51,6 +51,8 @@ namespace SampleApp
 
         public void Execute(string[] args)
         {
+            _logger.LogDebug("Begin logging....");
+
             _logger.LogInformation("Starting");
 
             var startTime = DateTimeOffset.Now;
