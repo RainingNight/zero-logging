@@ -41,7 +41,7 @@ namespace Zero.Logging.Elasticsearch
             IConnectionPool pool;
             if (options.ElasticsearchUrl.Contains(";"))
             {
-                var urls = options.ElasticsearchUrl.Split(';').ToList();
+                var urls = options.ElasticsearchUrl.Split(';').Where(_ => !string.IsNullOrWhiteSpace(_)).ToList();
                 pool = new StaticConnectionPool(urls.Select(_ => new Uri(_)));
             }
             else
