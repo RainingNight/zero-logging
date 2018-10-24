@@ -5,7 +5,7 @@ namespace Zero.Logging.Batching
     public class BatchingLoggerOptions
     {
         private int? _batchSize = 32;
-        private int? _backgroundQueueSize;
+        private int? _backgroundQueueSize = 1000;
         private TimeSpan _flushPeriod = TimeSpan.FromSeconds(1);
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Zero.Logging.Batching
         /// <summary>
         /// Gets or sets the maximum size of the background log message queue or null for no limit.
         /// After maximum queue size is reached log event sink would start blocking.
-        /// Defaults to <c>null</c>.
+        /// Defaults to <c>1000</c>.
         /// </summary>
         public int? BackgroundQueueSize
         {
