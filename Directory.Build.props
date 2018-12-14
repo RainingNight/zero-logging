@@ -1,19 +1,30 @@
 ﻿<Project>
-  <Import
-    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
-    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
-
   <Import Project="version.props" />
 
   <PropertyGroup>
     <Product>Zero Logging</Product>
-    <Company>RainingNight</Company>
     <Authors>RainingNight</Authors>
+    <Company>RainingNight</Company>
     <Copyright>Copyright © RainingNight</Copyright>
-    <PackageProjectUrl>https://github.com/rainingnight/zero-logging</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/RainingNight/zero-logging/dev/LICENSE</PackageLicenseUrl>
+    <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
+    <PackageLicenseType>MIT</PackageLicenseType>
+    <!--
+      Suppress a warning about upcoming deprecation of PackageLicenseUrl. When embedding licenses are supported,
+      replace PackageLicenseUrl with PackageLicenseExpression.
+    -->
+    <NoWarn>$(NoWarn);NU5125</NoWarn>
+    <!-- Suppress warnings about using SemVer 2.0. -->
+    <NoWarn>$(NoWarn);NU5105</NoWarn>
+
+    <PackageProjectUrl>https://github.com/rainingnight/zero-logging</PackageProjectUrl>
+
     <RepositoryUrl>https://github.com/rainingnight/zero-logging</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- Compilation options -->
+  <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>

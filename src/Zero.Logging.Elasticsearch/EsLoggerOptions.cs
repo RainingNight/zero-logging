@@ -112,6 +112,16 @@ namespace Zero.Logging.Elasticsearch
         /// </summary>
         public string ElasticsearchUrl { get; set; }
 
+        /// <summary>
+        /// The user name of the elasticsearch.
+        /// </summary>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// The password of the elasticsearch.
+        /// </summary>
+        public string Password { get; set; }
+
         ///<summary>
         /// Allows you to override the connection used to communicate with elasticsearch.
         /// </summary>

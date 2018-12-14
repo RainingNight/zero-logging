@@ -50,6 +50,11 @@ namespace Zero.Logging.Elasticsearch
 
             var configuration = new ConnectionConfiguration(pool, options.Connection, options.Serializer).RequestTimeout(options.ConnectionTimeout);
 
+            if (!string.IsNullOrEmpty(options.UserName) && !string.IsNullOrEmpty(options.Password))
+            {
+                configuration.BasicAuthentication(options.UserName, options.Password);
+            }
+
             if (options.ModifyConnectionSettings != null) configuration = options.ModifyConnectionSettings(configuration);
 
             configuration.ThrowExceptions();
