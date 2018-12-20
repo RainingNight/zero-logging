@@ -16,7 +16,9 @@
       }
     },
     "Elasticsearch": {
-      "ElasticsearchUrl": "http://140.143.234.19:9200"
+      "ElasticsearchUrl": "http://localhost:9200",
+      "UserName": "",
+      "Password": ""
     }
   }
 }
