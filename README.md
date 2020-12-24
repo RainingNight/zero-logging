@@ -4,7 +4,7 @@ Zero logger provider for [Microsoft.Extensions.Logging](https://github.com/aspne
 
 ## Logging in Elasticsearch
 
-PLEASE Read [Zero.Logging.Elasticsearch](https://github.com/RainingNight/zero-logging/blob/dev/src/Zero.Logging.Elasticsearch/readme.md).
+PLEASE Read [Zero.Logging.Elasticsearch](https://github.com/RainingNight/zero-logging/blob/dev/docs/elasticsearch.md).
 
 ## Logging in File
 
